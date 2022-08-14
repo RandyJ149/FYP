@@ -1,14 +1,12 @@
-from dataclasses import dataclass
 import socket
 #from threading import *
 from _thread import *
 from queue import LifoQueue
-from urllib import response
 import pandas as pd
-import sklearn
 import joblib
 import json
 import time
+import datetime
 
 
 #Declaring the Stacks as Global Variable
@@ -35,6 +33,14 @@ s4.put(21)
 s4.put(21)
 s4.put(16)
 
+def tstap():
+    curr_time = datetime.datetime.now()
+    time_st = curr_time.timestamp()
+    date_time = datetime.datetime.fromtimestamp(time_st)
+    str_date_time = date_time.strftime("%H:%M:%S")
+    return str_date_time
+
+
 
 
 class Networking():
@@ -54,18 +60,25 @@ class Networking():
 
 			while True:
 			#	start_time = time.time()
-				df1 = [[1337, s1.get(), s2.get(), s3.get(), s4.get()]]
+				x1, x2, x3, x4 = s1.get(), s2.get(), s3.get(), s4.get()
+				df1 = [[1337, x1, x2, x3, x4]]
+			#	df1 = [[1337, s1.get(), s2.get(), s3.get(), s4.get()]]
 				df = pd.DataFrame(df1)
 
 				x = test.predict(df)
 				print(x)
+				if(int(x[0])==0):
+					An = "No Anomaly"
+				else:
+					An = "Anomaly in Sensor " + str(x[0])
+				print("---> Data is [{}, {}, {}, {}] and {} <---".format(x1, x2, x3, x4, An))
 			#	time.sleep(10 - (time.time() - start_time))
 
 		start_new_thread(AnoMad, ())
 
 
 		try:
-			s.bind(('192.168.71.117', 15000))
+			s.bind(('192.168.123.117', 15000))
 		except socket.error as e:
 			print(str(e))
 		print('Socket is listening..')
@@ -74,13 +87,16 @@ class Networking():
 
 		def multi_threaded_client(connection):
 #			connection.send(str.encode("Server is working: "))
-			connection.send(bytes("Server is working: ", "utf-8"))
+			connection.send(bytes("Server is waiting for Data", "utf-8"))
 			while True:
 				data = connection.recv(2048).decode("utf-8")
-				connection.send(bytes("Received Data:", "utf-8"))
+				data = json.loads(data)
+				text = str("Received Data at {} from {}".format(tstap(), data["id"]))
+				print(text)
+				connection.send(bytes(text, "utf-8"))
 				if not data:
 					break
-				data = json.loads(data)
+			#	data = json.loads(data)
 				#Storing Directly into stack using eval()
 				eval(data["id"]).put(data["temp"])
 			connection.close()
