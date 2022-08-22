@@ -8,6 +8,8 @@ import json
 import time
 import datetime
 
+server_id = '192.168.53.7'
+
 
 #Declaring the Stacks as Global Variable
 s1 = LifoQueue()
@@ -15,23 +17,23 @@ s2 = LifoQueue()
 s3 = LifoQueue()
 s4 = LifoQueue()
 
-#Code for testing
-s1.put(20)
-s1.put(15)
-s1.put(20)
-s1.put(21)
-s2.put(20)
-s2.put(21)
-s2.put(15)
-s2.put(21)
-s3.put(21)
-s3.put(20)
-s3.put(20)
-s3.put(20)
-s4.put(20)
-s4.put(21)
-s4.put(21)
-s4.put(16)
+# #Code for testing
+# s1.put(20)
+# s1.put(15)
+# s1.put(20)
+# s1.put(21)
+# s2.put(20)
+# s2.put(21)
+# s2.put(15)
+# s2.put(21)
+# s3.put(21)
+# s3.put(20)
+# s3.put(20)
+# s3.put(20)
+# s4.put(20)
+# s4.put(21)
+# s4.put(21)
+# s4.put(16)
 
 def tstap():
     curr_time = datetime.datetime.now()
@@ -52,14 +54,14 @@ class Networking():
 
 		def AnoMad():
 			global s1, s2, s3, s4
-			test = joblib.load('rf.pkl')
+			test = joblib.load('rf_4.pkl')
 
 			#Test Code
 			# df1 = [[1337, 20, 10.76, 21, 20.03]]
 			# df = pd.DataFrame(df1)
 
 			while True:
-			#	start_time = time.time()
+				start_time = time.time()
 				x1, x2, x3, x4 = s1.get(), s2.get(), s3.get(), s4.get()
 				df1 = [[1337, x1, x2, x3, x4]]
 			#	df1 = [[1337, s1.get(), s2.get(), s3.get(), s4.get()]]
@@ -72,13 +74,13 @@ class Networking():
 				else:
 					An = "Anomaly in Sensor " + str(x[0])
 				print("---> Data is [{}, {}, {}, {}] and {} <---".format(x1, x2, x3, x4, An))
-			#	time.sleep(10 - (time.time() - start_time))
+				print(time.time() - start_time)
 
 		start_new_thread(AnoMad, ())
 
 
 		try:
-			s.bind(('192.168.123.117', 15000))
+			s.bind((server_id, 15000))
 		except socket.error as e:
 			print(str(e))
 		print('Socket is listening..')
@@ -91,7 +93,7 @@ class Networking():
 			while True:
 				data = connection.recv(2048).decode("utf-8")
 				data = json.loads(data)
-				text = str("Received Data at {} from {}".format(tstap(), data["id"]))
+				text = str("Received Data:{} at {} from {}".format(data["temp"], tstap(), data["id"]))
 				print(text)
 				connection.send(bytes(text, "utf-8"))
 				if not data:
